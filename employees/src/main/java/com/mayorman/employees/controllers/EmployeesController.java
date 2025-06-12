@@ -1,9 +1,13 @@
 package com.mayorman.employees.controllers;
 
-import com.mayorman.employees.models.CreateEmployeeRequest;
+import com.mayorman.employees.models.requests.CreateEmployeeRequest;
+import com.mayorman.employees.models.responses.CreateEmployeeResponse;
 import com.mayorman.employees.models.CreateEmployeeResponses;
 import com.mayorman.employees.models.CreateUserRequest;
+import com.mayorman.employees.models.data.EmployeeDto;
+import com.mayorman.employees.services.EmployeeService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.http.HttpStatus;
@@ -16,15 +20,18 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/employees")
+@RequiredArgsConstructor
 public class EmployeesController {
 
+    private final EmployeeService employeeService;
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreateEmployeeResponse> createUser(@Valid @RequestBody CreateEmployeeRequest userDetails){
+    public ResponseEntity<CreateEmployeeResponse> createUser(@Valid @RequestBody CreateEmployeeRequest employeeDetails){
 
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
-        UserDto userDto = modelMapper.map(userDetails, UserDto.class);
-        UserDto createdUserDto = usersService.createUser(userDto);
+        EmployeeDto userDto = modelMapper.map(employeeDetails, EmployeeDto.class);
+        EmployeeDto createdUserDto = employeeService.createEmployee(userDto);
 
         CreateEmployeeResponse returnValue = modelMapper.map(createdUserDto,CreateEmployeeResponse.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);

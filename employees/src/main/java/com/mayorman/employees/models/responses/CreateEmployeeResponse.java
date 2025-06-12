@@ -1,4 +1,4 @@
-package com.mayorman.employees.models;
+package com.mayorman.employees.models.responses;
 
 public class CreateEmployeeResponse {
 
@@ -13,4 +13,6 @@ public class CreateEmployeeResponse {
 //    private Date lastLoggedIn;
     private String createdAt;
     private String updatedAt;
+
+    private String department;
 }
