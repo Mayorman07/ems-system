@@ -1,5 +1,8 @@
 package com.mayorman.employees.controllers;
 
+import com.mayorman.employees.models.CreateEmployeeRequest;
+import com.mayorman.employees.models.CreateEmployeeResponses;
+import com.mayorman.employees.models.CreateUserRequest;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
@@ -16,14 +19,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class EmployeesController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreateUserResponses> createUser(@Valid @RequestBody CreateUserRequest userDetails){
+    public ResponseEntity<CreateEmployeeResponse> createUser(@Valid @RequestBody CreateEmployeeRequest userDetails){
 
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
         UserDto userDto = modelMapper.map(userDetails, UserDto.class);
         UserDto createdUserDto = usersService.createUser(userDto);
 
-        CreateUserResponses returnValue = modelMapper.map(createdUserDto,CreateUserResponses.class);
+        CreateEmployeeResponse returnValue = modelMapper.map(createdUserDto,CreateEmployeeResponse.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
     }
 }
