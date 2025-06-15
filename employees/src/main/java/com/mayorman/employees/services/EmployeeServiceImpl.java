@@ -95,13 +95,33 @@ public class EmployeeServiceImpl implements  EmployeeService{
     }
 
     @Override
-    public void deleteEmployee() {
+    @Transactional
+    public void deleteEmployee(String email) {
+        // 1. Find the existing employee by email
+        Employee existingEmployee = employeeRepository.findByEmail(email)
+                .orElseThrow(() -> { // Use Optional and throw directly
+                    logger.info("Employee with email {} not found for deletion!", email);
+                    return new NotFoundException("Employee not found!");
+                });
+
+        employeeRepository.delete(existingEmployee);
+        logger.info("The employee has been deleted");
+
 
     }
 
     @Override
-    public void viewEmployeeDetails() {
+    public EmployeeDto viewEmployeeDetails(String email) {
 
+        // 1. Find the existing employee by email
+        Employee existingEmployee = employeeRepository.findByEmail(email)
+                .orElseThrow(() -> { // Use Optional and throw directly
+                    logger.info("Employee with email {} not found for viewing!", email);
+                    return new NotFoundException("Employee not found!");
+                });
+
+        EmployeeDto returnValue = modelMapper.map(existingEmployee, EmployeeDto.class);
+        return  returnValue;
     }
 
     @Override

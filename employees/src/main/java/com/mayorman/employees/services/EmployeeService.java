@@ -8,9 +8,9 @@ public interface EmployeeService  {
 
     EmployeeDto updateEmployee(EmployeeDto employeeDetails);
 
-    public void deleteEmployee();
+    void deleteEmployee(String email);
 
-    public void viewEmployeeDetails();
+    EmployeeDto  viewEmployeeDetails(String email);
 
     //has to be a list
 
