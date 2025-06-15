@@ -14,10 +14,13 @@ public class EmployeeDto implements Serializable {
 
     private String firstName;
     private String lastName;
-    private String password;
     private String email;
+    private String password;
     private String employeeId;
     private String encryptedPassword;
+    private String department;
+    private String gender;
+    private String username;
 
     public String getFirstName() {
         return firstName;
@@ -33,14 +36,6 @@ public class EmployeeDto implements Serializable {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public String getEmail() {
@@ -65,5 +60,37 @@ public class EmployeeDto implements Serializable {
 
     public void setEncryptedPassword(String encryptedPassword) {
         this.encryptedPassword = encryptedPassword;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
