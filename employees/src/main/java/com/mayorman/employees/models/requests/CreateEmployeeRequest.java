@@ -8,7 +8,6 @@ public class CreateEmployeeRequest {
     private String password;
     private String status;
     private String gender;
-
     private String department;
 
 }

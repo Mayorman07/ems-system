@@ -2,8 +2,6 @@ package com.mayorman.employees.controllers;
 
 import com.mayorman.employees.models.requests.CreateEmployeeRequest;
 import com.mayorman.employees.models.responses.CreateEmployeeResponse;
-import com.mayorman.employees.models.CreateEmployeeResponses;
-import com.mayorman.employees.models.CreateUserRequest;
 import com.mayorman.employees.models.data.EmployeeDto;
 import com.mayorman.employees.services.EmployeeService;
 import jakarta.validation.Valid;

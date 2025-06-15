@@ -2,9 +2,12 @@ package com.mayorman.employees.repository;
 import com.mayorman.employees.entities.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.CrudRepository;
+
+import java.util.Optional;
+
 public interface EmployeeRepository extends JpaRepository <Employee, Long>{
 
-    Employee findByEmail (String email);
+    Optional<Employee> findByEmail(String email);
 
-    Employee findByUserId(String userId);
+    Optional<Employee> findByEmployeeId(String userId);
 }
