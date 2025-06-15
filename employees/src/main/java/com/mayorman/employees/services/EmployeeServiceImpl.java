@@ -19,7 +19,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,9 +67,8 @@ public class EmployeeServiceImpl implements  EmployeeService{
         return returnValue;
     }
 
-
-
-
+    @Override
+    @Transactional
     public EmployeeDto updateEmployee(EmployeeDto employeeDetails) {
         // 1. Find the existing employee by email
         Employee existingEmployee = employeeRepository.findByEmail(employeeDetails.getEmail())
@@ -107,11 +108,10 @@ public class EmployeeServiceImpl implements  EmployeeService{
         employeeRepository.delete(existingEmployee);
         logger.info("The employee has been deleted");
 
-
     }
 
     @Override
-    public EmployeeDto viewEmployeeDetails(String email) {
+    public EmployeeDto viewProfile(String email) {
 
         // 1. Find the existing employee by email
         Employee existingEmployee = employeeRepository.findByEmail(email)
@@ -125,14 +125,22 @@ public class EmployeeServiceImpl implements  EmployeeService{
     }
 
     @Override
-    public void viewProfile() {
+    public List<EmployeeDto> viewEmployeeDetails() {
+        List<Employee> existingEmployees = employeeRepository.findAll();
+        // Check if the list is empty (optional, but good for logging/handling)
+        if (existingEmployees.isEmpty()) {
+            logger.info("No employees found in the database.");
+            return List.of(); // Return an empty list
+        }
+        // --- Correct way to map a List of entities to a List of DTOs ---
+        List<EmployeeDto> returnValue = existingEmployees.stream() // Convert the list to a stream
+                .map(employee -> modelMapper.map(employee, EmployeeDto.class)) // Map each individual Employee to an EmployeeDto
+                .collect(Collectors.toList()); // Collect the mapped DTOs into a new List
 
+        logger.info("Retrieved {} employee details.", returnValue.size());
+        return returnValue;
     }
 
-    @Override
-    public EmployeeDto getEmployeeDetailsByEmail(String email) {
-        return null;
-    }
 
     @Override
     public EmployeeDto getEmployeeByEmployeeId(String employeeId, String authorization) {
