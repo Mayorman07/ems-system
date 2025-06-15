@@ -2,6 +2,8 @@ package com.mayorman.employees.services;
 
 import com.mayorman.employees.models.data.EmployeeDto;
 
+import java.util.List;
+
 public interface EmployeeService  {
 
     EmployeeDto createEmployee(EmployeeDto employeeDetails);
@@ -10,13 +12,11 @@ public interface EmployeeService  {
 
     void deleteEmployee(String email);
 
-    EmployeeDto  viewEmployeeDetails(String email);
+    EmployeeDto  viewProfile(String email);
 
     //has to be a list
 
-    public void viewProfile();
-
-    EmployeeDto getEmployeeDetailsByEmail(String email);
+    public List<EmployeeDto> viewEmployeeDetails();
 
     EmployeeDto getEmployeeByEmployeeId(String employeeId, String authorization);
 }
