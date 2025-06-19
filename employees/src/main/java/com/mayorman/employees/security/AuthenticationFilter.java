@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mayorman.employees.models.data.EmployeeDto;
 import com.mayorman.employees.models.requests.LoginRequest;
 import com.mayorman.employees.services.EmployeeService;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -76,7 +78,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         // Use the SecretKey to sign a JWT
         String token = Jwts.builder()
                 .claim("scope", auth.getAuthorities())
-                .subject(userDetails.getUserId())
+                .subject(userDetails.getEmployeeId())
                 .expiration(Date.from(now.plusMillis(Long.parseLong(environment.getProperty("token.expiration.time")))))
                 .issuedAt(Date.from(now))
                 .signWith(secretKey)
@@ -85,7 +87,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
         // Set the JWT in the response header (optional)
         res.addHeader("token", token);
-        res.addHeader("userId", userDetails.getUserId());
+        res.addHeader("userId", userDetails.getEmployeeId());
     }
 }
 
