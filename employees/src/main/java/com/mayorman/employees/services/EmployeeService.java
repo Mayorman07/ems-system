@@ -1,10 +1,11 @@
 package com.mayorman.employees.services;
 
 import com.mayorman.employees.models.data.EmployeeDto;
+import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
 
-public interface EmployeeService  {
+public interface EmployeeService extends UserDetailsService {
 
     EmployeeDto createEmployee(EmployeeDto employeeDetails);
 
@@ -17,6 +18,8 @@ public interface EmployeeService  {
     //has to be a list
 
     public List<EmployeeDto> viewEmployeeDetails();
+
+    EmployeeDto getEmployeeDetailsByEmail(String email);
 
     EmployeeDto getEmployeeByEmployeeId(String employeeId, String authorization);
 }
