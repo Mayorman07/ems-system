@@ -5,146 +5,123 @@ import com.mayorman.employees.exceptions.ConflictException;
 import com.mayorman.employees.exceptions.NotFoundException;
 import com.mayorman.employees.models.data.EmployeeDto;
 import com.mayorman.employees.repository.EmployeeRepository;
-import com.mayorman.employees.utils.EmployeeManagementBeanUtil;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
-@NoArgsConstructor
-@AllArgsConstructor
 @Slf4j
-public class EmployeeServiceImpl implements  EmployeeService{
+@RequiredArgsConstructor
+public class EmployeeServiceImpl implements EmployeeService {
 
-    EmployeeRepository employeeRepository;
+    // --- Dependencies are correctly defined here ---
+    private final EmployeeRepository employeeRepository;
+    private final PasswordEncoder passwordEncoder; // <-- IMPROVEMENT 1: Using the interface
+    private final ModelMapper modelMapper;
+    private final Environment environment;
 
-    BCryptPasswordEncoder bCryptPasswordEncoder;
-
-    ModelMapper modelMapper; // Autowire the shared ModelMapper bean for one instance creation and sharing
-
-    Environment environment;
-    private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class); // Use SLF4J logger
-
-
+    private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class);
 
     @Override
     @Transactional
     public EmployeeDto createEmployee(EmployeeDto employeeDetails) {
-        // 1. Check for existence FIRST
-        if (employeeRepository.findByEmail(employeeDetails.getEmail()).isPresent()){ // Use Optional for clarity
+        if (employeeRepository.findByEmail(employeeDetails.getEmail()).isPresent()) {
             logger.info("Employee with email {} already exists!", employeeDetails.getEmail());
             throw new ConflictException("Existing employee!");
         }
 
-        // 2. Set necessary fields before mapping
         employeeDetails.setEmployeeId(UUID.randomUUID().toString());
-        // Assuming employeeDetails.getPassword() holds the raw password for encoding
-        employeeDetails.setEncryptedPassword(bCryptPasswordEncoder.encode(employeeDetails.getPassword()));
+        // Using the injected passwordEncoder
+        employeeDetails.setEncryptedPassword(passwordEncoder.encode(employeeDetails.getPassword()));
 
-
-        // 3. Map DTO to Entity
         Employee employeeToBeCreated = modelMapper.map(employeeDetails, Employee.class);
-
-        // 4. Save the new entity
         Employee savedEmployee = employeeRepository.save(employeeToBeCreated);
 
-        // 5. Map the saved entity back to DTO for return
-        EmployeeDto returnValue = modelMapper.map(savedEmployee, EmployeeDto.class);
-        return returnValue;
+        return modelMapper.map(savedEmployee, EmployeeDto.class);
     }
 
     @Override
     @Transactional
     public EmployeeDto updateEmployee(EmployeeDto employeeDetails) {
-        // 1. Find the existing employee by email
         Employee existingEmployee = employeeRepository.findByEmail(employeeDetails.getEmail())
-                .orElseThrow(() -> { // Use Optional and throw directly
+                .orElseThrow(() -> {
                     logger.info("Employee with email {} not found for update!", employeeDetails.getEmail());
                     return new NotFoundException("Employee not found!");
                 });
 
-        // 2. Update specific fields from DTO onto the EXISTING entity
-        // ModelMapper.map(source, destination) is designed for this
         modelMapper.map(employeeDetails, existingEmployee);
-
-        // Handle password update if necessary
-        // If employeeDetails has a 'rawPassword' field for updates:
-        // if (employeeDetails.getRawPassword() != null && !employeeDetails.getRawPassword().isEmpty()) {
-        //     existingEmployee.setEncryptedPassword(bCryptPasswordEncoder.encode(employeeDetails.getRawPassword()));
-        // }
-
-        // 3. Save the updated existing entity
-        Employee updatedEmployee = employeeRepository.save(existingEmployee); // Save the modified existing entity
-
-        // 4. Map the updated entity back to DTO for return
-        EmployeeDto returnValue = modelMapper.map(updatedEmployee, EmployeeDto.class);
-        return returnValue;
+        Employee updatedEmployee = employeeRepository.save(existingEmployee);
+        return modelMapper.map(updatedEmployee, EmployeeDto.class);
     }
 
     @Override
     @Transactional
     public void deleteEmployee(String email) {
-        // 1. Find the existing employee by email
         Employee existingEmployee = employeeRepository.findByEmail(email)
-                .orElseThrow(() -> { // Use Optional and throw directly
+                .orElseThrow(() -> {
                     logger.info("Employee with email {} not found for deletion!", email);
                     return new NotFoundException("Employee not found!");
                 });
 
         employeeRepository.delete(existingEmployee);
         logger.info("The employee has been deleted");
-
     }
 
     @Override
     public EmployeeDto viewProfile(String email) {
-
-        // 1. Find the existing employee by email
         Employee existingEmployee = employeeRepository.findByEmail(email)
-                .orElseThrow(() -> { // Use Optional and throw directly
+                .orElseThrow(() -> {
                     logger.info("Employee with email {} not found for viewing!", email);
                     return new NotFoundException("Employee not found!");
                 });
 
-        EmployeeDto returnValue = modelMapper.map(existingEmployee, EmployeeDto.class);
-        return  returnValue;
+        return modelMapper.map(existingEmployee, EmployeeDto.class);
     }
 
     @Override
     public List<EmployeeDto> viewEmployeeDetails() {
         List<Employee> existingEmployees = employeeRepository.findAll();
-        // Check if the list is empty (optional, but good for logging/handling)
         if (existingEmployees.isEmpty()) {
             logger.info("No employees found in the database.");
-            return List.of(); // Return an empty list
+            return List.of();
         }
-        // --- Correct way to map a List of entities to a List of DTOs ---
-        List<EmployeeDto> returnValue = existingEmployees.stream() // Convert the list to a stream
-                .map(employee -> modelMapper.map(employee, EmployeeDto.class)) // Map each individual Employee to an EmployeeDto
-                .collect(Collectors.toList()); // Collect the mapped DTOs into a new List
+        return existingEmployees.stream()
+                .map(employee -> modelMapper.map(employee, EmployeeDto.class))
+                .collect(Collectors.toList());
+    }
 
-        logger.info("Retrieved {} employee details.", returnValue.size());
-        return returnValue;
+    // --- IMPROVEMENT 2: This method is now correct ---
+    @Override
+    public EmployeeDto getEmployeeDetailsByEmail(String email) {
+        Employee employee = employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(email));
+
+        return modelMapper.map(employee, EmployeeDto.class);
     }
 
 
     @Override
     public EmployeeDto getEmployeeByEmployeeId(String employeeId, String authorization) {
+        // TODO: Implement this method
+        return null;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        // TODO: Implement this method, likely needed for Spring Security login
         return null;
     }
 }
-

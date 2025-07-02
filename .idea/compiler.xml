@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="DiscoveryService" />
+        <module name="JwtAuthorities" />
       </profile>
       <profile name="Annotation profile for employees" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
@@ -23,6 +24,7 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="DiscoveryService" options="-parameters" />
+      <module name="JwtAuthorities" options="-parameters" />
       <module name="employees" options="-parameters" />
     </option>
   </component>

@@ -3,6 +3,7 @@ package com.mayorman.employees.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mayorman.employees.models.data.EmployeeDto;
 import com.mayorman.employees.models.requests.LoginRequest;
+import com.mayorman.employees.models.responses.LoginResponse;
 import com.mayorman.employees.services.EmployeeService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -14,6 +15,8 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -35,11 +38,15 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final EmployeeService employeeService;
     private final Environment environment;
+    private final ObjectMapper objectMapper; // <-- Add this field
 
-    public AuthenticationFilter(EmployeeService employeeService,Environment environment, AuthenticationManager authenticationManager) {
+
+    public AuthenticationFilter(EmployeeService employeeService,Environment environment,
+                                AuthenticationManager authenticationManager,ObjectMapper objectMapper) {
         super(authenticationManager);
         this.environment = environment;
         this.employeeService = employeeService;
+        this.objectMapper = objectMapper;
     }
 
     @Override
@@ -63,7 +70,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                                             Authentication auth) throws IOException, ServletException {
 
         String username = ((User)auth.getPrincipal()).getUsername();
-        EmployeeDto userDetails = employeeService.getEmployeeDetailsByEmail(username);
+        EmployeeDto employeeDetails = employeeService.getEmployeeDetailsByEmail(username);
         String tokenSecret = environment.getProperty("token.secret.key");
         if (tokenSecret == null) {
             throw new RuntimeException("Token secret key is missing in the configuration!");
@@ -78,7 +85,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         // Use the SecretKey to sign a JWT
         String token = Jwts.builder()
                 .claim("scope", auth.getAuthorities())
-                .subject(userDetails.getEmployeeId())
+                .subject(employeeDetails.getEmployeeId())
                 .expiration(Date.from(now.plusMillis(Long.parseLong(environment.getProperty("token.expiration.time")))))
                 .issuedAt(Date.from(now))
                 .signWith(secretKey)
@@ -86,9 +93,21 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
 
         // Set the JWT in the response header (optional)
-        res.addHeader("token", token);
-        res.addHeader("userId", userDetails.getEmployeeId());
+//        res.addHeader("token", token);
+//        res.addHeader("userId", userDetails.getEmployeeId());
+
+        // Set the JWT in the response body (optional)
+
+        LoginResponse loginResponse = new LoginResponse(token, employeeDetails.getEmployeeId());
+        // Set the response content type to JSON
+        res.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        // Set the HTTP status code to 200 OK
+        res.setStatus(HttpStatus.OK.value());
+
+        // Write the JSON response to the response body
+        res.getWriter().write(objectMapper.writeValueAsString(loginResponse));
+        res.getWriter().flush(); // Ensure the data is sent immediately
     }
 }
 
-}
+

@@ -17,7 +17,7 @@ public interface EmployeeService extends UserDetailsService {
 
     //has to be a list
 
-    public List<EmployeeDto> viewEmployeeDetails();
+   List<EmployeeDto> viewEmployeeDetails();
 
     EmployeeDto getEmployeeDetailsByEmail(String email);
 
