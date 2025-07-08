@@ -19,7 +19,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-@EnableMethodSecurity(prePostEnabled = true)
+//@EnableMethodSecurity(prePostEnabled = true)
 @Configuration
 @EnableWebSecurity
 public class WebSecurity {
@@ -69,12 +69,14 @@ public class WebSecurity {
         // Configure authorization requests
         http.authorizeHttpRequests(authorize ->
                         authorize
-                                .requestMatchers(HttpMethod.GET, "/status/check").authenticated()
+//                                .requestMatchers(HttpMethod.GET, "/status/check").authenticated()
+                                .requestMatchers(HttpMethod.GET, "/status/check").permitAll()
+
 //                                        .requestMatchers(HttpMethod.GET, "/users/status/check").permitAll()  // Allow all requests to /users/status/check
                                 // Permit all POST requests to /users (e.g., for user registration) from a particular Ip address
 //                                .requestMatchers(HttpMethod.POST, "/users")
 //                                .access(new WebExpressionAuthorizationManager("hasIpAddress('"+environment.getProperty("gateway.ip")+"')"))
-                                .requestMatchers(new AntPathRequestMatcher("/users/**")).permitAll()
+                                .requestMatchers(new AntPathRequestMatcher("/employees/**")).permitAll()
 
 
                                 .requestMatchers(new AntPathRequestMatcher("/actuator/**", HttpMethod.GET.name())).permitAll()
