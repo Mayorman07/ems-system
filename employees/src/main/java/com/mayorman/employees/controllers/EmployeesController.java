@@ -28,19 +28,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("api/employees")
+@RequestMapping("/employees")
 @RequiredArgsConstructor
 public class EmployeesController {
 
     private final EmployeeService employeeService;
-    ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class); // Use SLF4J logger
 
 
     @GetMapping(path="/status/check")
-    public String status()
-    {
+    public String status() {
+        logger.info("The incoming status check employee request");
+
         return "Working hard on my new api gateway route on the port of Dee";
     }
 
