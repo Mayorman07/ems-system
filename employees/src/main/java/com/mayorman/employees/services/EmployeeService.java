@@ -22,4 +22,5 @@ public interface EmployeeService extends UserDetailsService {
     EmployeeDto getEmployeeDetailsByEmail(String email);
 
     EmployeeDto getEmployeeByEmployeeId(String employeeId, String authorization);
+
 }

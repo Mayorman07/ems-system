@@ -1,5 +1,8 @@
 package com.mayorman.employees.models.responses;
 
+import lombok.Data;
+
+@Data
 public class CreateEmployeeResponse {
 
     private String firstName;
@@ -13,6 +16,7 @@ public class CreateEmployeeResponse {
 //    private Date lastLoggedIn;
     private String createdAt;
     private String updatedAt;
-
     private String department;
+
+
 }
