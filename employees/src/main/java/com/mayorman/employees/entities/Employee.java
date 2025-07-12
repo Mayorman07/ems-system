@@ -34,6 +34,7 @@ public class Employee implements Serializable {
     private String encryptedPassword;
     private String department;
     private String gender;
+    private String status;
     private String username;
     private Date lastLoggedIn;
     private Date lastPasswordResetDate;
@@ -86,6 +87,14 @@ public class Employee implements Serializable {
 
     public void setEncryptedPassword(String encryptedPassword) {
         this.encryptedPassword = encryptedPassword;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getDepartment() {

@@ -52,6 +52,8 @@ public class WebSecurity {
         // to compare the stored password with the user-provided password during authentication.
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
 
+
+        //method that will be used to look up in a database
         authenticationManagerBuilder.userDetailsService(employeeService)
                 .passwordEncoder(bCryptPasswordEncoder);
 
