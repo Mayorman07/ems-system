@@ -17,6 +17,9 @@ public class ModelMapperConfig {
         // This configuration is essential to prevent the error
         TypeMap<EmployeeDto, Employee> typeMap = modelMapper.createTypeMap(EmployeeDto.class, Employee.class);
         typeMap.addMappings(mapper -> mapper.skip(Employee::setId));
+        // This tells ModelMapper not to set a destination field to null
+        // if its corresponding source field is null.
+        modelMapper.getConfiguration().setSkipNullEnabled(true);
         // You can add specific mappings here if needed
         return modelMapper;
     }

@@ -57,9 +57,9 @@ public class EmployeesController {
         return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
     }
     @PostMapping(path ="/update", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CreateEmployeeResponse> updateEmployee(@Valid @RequestBody CreateEmployeeRequest employeeDetails){
-        logger.info("The incoming update employee request {} " , employeeDetails);
-        EmployeeDto employeeDto = modelMapper.map(employeeDetails, EmployeeDto.class);
+    public ResponseEntity<CreateEmployeeResponse> updateEmployee(@Valid @RequestBody CreateEmployeeRequest updateEmployeeDetails){
+        logger.info("The incoming update employee request {} " , updateEmployeeDetails);
+        EmployeeDto employeeDto = modelMapper.map(updateEmployeeDetails, EmployeeDto.class);
         EmployeeDto updatedEmployeeDto = employeeService.updateEmployee(employeeDto);
 
         CreateEmployeeResponse returnValue = modelMapper.map(updatedEmployeeDto,CreateEmployeeResponse.class);

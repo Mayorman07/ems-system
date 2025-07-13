@@ -82,11 +82,17 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         SecretKey secretKey = Keys.hmacShaKeyFor(secretKeyBytes);
 
         Instant now = Instant.now();
+
+
+        long expirationMillis = Long.parseLong(environment.getProperty("token.expiration.time"));
+
+        Date expirationDate = Date.from(now.plusMillis(expirationMillis));
+
         // Use the SecretKey to sign a JWT
         String token = Jwts.builder()
                 .claim("scope", auth.getAuthorities())
                 .subject(employeeDetails.getEmployeeId())
-                .expiration(Date.from(now.plusMillis(Long.parseLong(environment.getProperty("token.expiration.time")))))
+                .expiration(expirationDate)
                 .issuedAt(Date.from(now))
                 .signWith(secretKey)
                 .compact();
@@ -98,7 +104,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
         // Set the JWT in the response body (optional)
 
-        LoginResponse loginResponse = new LoginResponse(token, employeeDetails.getEmployeeId());
+        LoginResponse loginResponse = new LoginResponse(token, employeeDetails.getEmployeeId(), expirationMillis);
         // Set the response content type to JSON
         res.setContentType(MediaType.APPLICATION_JSON_VALUE);
         // Set the HTTP status code to 200 OK

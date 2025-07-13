@@ -8,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -15,6 +17,7 @@ import java.util.Date;
 
 @Entity
 @Table(name="employees")
+@Data
 public class Employee implements Serializable {
 
     private static final long serialVersionUID = -273145678149216053L;

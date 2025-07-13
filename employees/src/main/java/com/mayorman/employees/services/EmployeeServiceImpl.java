@@ -12,13 +12,16 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -46,7 +49,8 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeDetails.setEmployeeId(UUID.randomUUID().toString());
         // Using the injected passwordEncoder
         employeeDetails.setEncryptedPassword(passwordEncoder.encode(employeeDetails.getPassword()));
-
+        String username = generateUsername(employeeDetails.getFirstName(), employeeDetails.getLastName());
+        employeeDetails.setUsername(username);
         Employee employeeToBeCreated = modelMapper.map(employeeDetails, Employee.class);
         Employee savedEmployee = employeeRepository.save(employeeToBeCreated);
 
@@ -121,7 +125,30 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // TODO: Implement this method, likely needed for Spring Security login
-        return null;
+
+        Optional<Employee> employeeToBeLoggedIn = employeeRepository.findByEmail(username);
+        if(employeeToBeLoggedIn == null){
+            throw new UsernameNotFoundException(username);
+        }
+        return new User(employeeToBeLoggedIn.get().getEmail(), employeeToBeLoggedIn.get().getEncryptedPassword(),true,
+                true, true,true,new ArrayList<>());
+    }
+
+    private String generateUsername(String firstName, String lastName) {
+        // Safely get the first 3 letters of the first name
+        String firstNamePart = firstName.length() < 3 ?
+                firstName :
+                firstName.substring(0, 3);
+
+        // Safely get the last 2 letters of the last name
+        String lastNamePart = lastName.length() < 2 ?
+                lastName :
+                lastName.substring(lastName.length() - 2);
+
+        // Generate a random 3-digit number (100-999)
+        int randomNumber = new Random().nextInt(900) + 100;
+
+        // Combine, convert to lowercase, and return the result
+        return (firstNamePart + lastNamePart).toLowerCase() + randomNumber;
     }
 }
