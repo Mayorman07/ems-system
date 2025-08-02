@@ -31,7 +31,15 @@ public class SecurityConfig {
                 // Make sure you have spring.security.user.roles=ADMIN in your properties file
                 .roles(environment.getProperty("spring.security.user.roles"))
                 .build();
-        return new InMemoryUserDetailsManager(admin);
+
+        UserDetails client = User
+                // Use environment properties to get user details
+                .withUsername(environment.getProperty("mayor-spring.security.user.name"))
+                .password(passwordEncoder.encode(environment.getProperty("mayor-spring.security.user.password")))
+                // Make sure you have spring.security.user.roles=ADMIN in your properties file
+                .roles(environment.getProperty("mayor-spring.security.user.roles"))
+                .build();
+        return new InMemoryUserDetailsManager(admin,client);
     }
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -39,9 +47,13 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // This rule correctly restricts the POST method on actuator endpoints to ADMINs.
                         .requestMatchers(HttpMethod.POST, "/actuator/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/encrypt").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST,"/decrypt").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/**").hasAnyRole("CLIENT", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/actuator/**"))
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/actuator/busrefresh", "/encrypt","/decrypt"))
                 .httpBasic(Customizer.withDefaults());
 
         return httpSecurity.build();
