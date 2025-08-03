@@ -73,7 +73,7 @@ public class EmployeesController {
         return ResponseEntity.status(HttpStatus.CREATED).body(returnValue);
     }
 
-    @DeleteMapping(path ="delete/{email}") // Maps to DELETE /employees/{email}
+    @DeleteMapping(path ="/{email}") // Maps to DELETE /employees/{email}
     public ResponseEntity<Void> deleteEmployee(@PathVariable("email") String email) {
         // 1. Clearer log message
         logger.info("Received request to delete employee with email: {}", email);

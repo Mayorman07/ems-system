@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.core.env.Environment;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,6 +33,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     // --- Dependencies are correctly defined here ---
     private final EmployeeRepository employeeRepository;
+    private final RabbitTemplate rabbitTemplate;
     private final PasswordEncoder passwordEncoder; // <-- IMPROVEMENT 1: Using the interface
     private final ModelMapper modelMapper;
     private final Environment environment;
@@ -53,6 +55,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeDetails.setUsername(username);
         Employee employeeToBeCreated = modelMapper.map(employeeDetails, Employee.class);
         Employee savedEmployee = employeeRepository.save(employeeToBeCreated);
+
+        rabbitTemplate.convertAndSend("user-events-exchange", "user.created", employeeDetails);
+        logger.info("Published User Created event for email: {}", savedEmployee.getEmail());
 
         return modelMapper.map(savedEmployee, EmployeeDto.class);
     }

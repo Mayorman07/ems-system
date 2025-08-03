@@ -21,6 +21,15 @@
         </processorPath>
         <module name="employees" />
       </profile>
+      <profile name="Annotation profile for EmailService" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/unknown/lombok-unknown.jar" />
+        </processorPath>
+        <module name="EmailService" />
+      </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
@@ -28,6 +37,7 @@
       <module name="ApiGateway" options="-parameters" />
       <module name="ConfigServer" options="-parameters" />
       <module name="DiscoveryService" options="-parameters" />
+      <module name="EmailService" options="-parameters" />
       <module name="JwtAuthorities" options="-parameters" />
       <module name="employees" options="-parameters" />
     </option>
