@@ -25,11 +25,8 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class WebSecurity {
 
     private final EmployeeService employeeService;
-
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-
     private final Environment environment;
-
     private final ObjectMapper objectMapper;
 
     public  WebSecurity(Environment environment, EmployeeService employeeService, BCryptPasswordEncoder bCryptPasswordEncoder, ObjectMapper objectMapper){
@@ -73,7 +70,8 @@ public class WebSecurity {
                         authorize
 //                                .requestMatchers(HttpMethod.GET, "/status/check").authenticated()
                                 .requestMatchers(HttpMethod.GET, "/status/check").permitAll()
-
+                                .requestMatchers(HttpMethod.GET, "/verify").permitAll()
+                                .requestMatchers("/verification_success.html", "/verification_failure.html").permitAll()
 //                                        .requestMatchers(HttpMethod.GET, "/users/status/check").permitAll()  // Allow all requests to /users/status/check
                                 // Permit all POST requests to /users (e.g., for user registration) from a particular Ip address
 //                                .requestMatchers(HttpMethod.POST, "/users")

@@ -1,5 +1,6 @@
 package com.mayorman.EmailService.model;
 
+import com.mayorman.EmailService.constants.Status;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +24,8 @@ public class EmployeeDto implements Serializable {
     private String gender;
     private String username;
     private String createdAt;
+    private Status status;
+
 
     public String getFirstName() {
         return firstName;
@@ -102,5 +105,13 @@ public class EmployeeDto implements Serializable {
 
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 }
