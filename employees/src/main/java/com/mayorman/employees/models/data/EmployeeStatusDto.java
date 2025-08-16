@@ -5,23 +5,20 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.Serializable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EmployeeDto implements Serializable {
-
-    private  static final long serialVersionUID = -953297098295050686L;
+public class EmployeeStatusDto {
 
     private String firstName;
     private String lastName;
     private String email;
-    private String password;
-    private String employeeId;
-    private String encryptedPassword;
-    private String department;
-    private String gender;
-    private String username;
-    private String createdAt;
     private Status status;
+    private String role;
+    private String employeeId;
+    private String username;
+    //    private Date lastLoggedIn;
+    private String createdAt;
+    private String updatedAt;
+    private String department;
 }
