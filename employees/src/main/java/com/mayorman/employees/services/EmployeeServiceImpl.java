@@ -152,9 +152,9 @@ public class EmployeeServiceImpl implements EmployeeService {
                 lastName :
                 lastName.substring(lastName.length() - 2);
         int randomNumber = new Random().nextInt(900) + 100;
+
         return (firstNamePart + lastNamePart).toLowerCase() + randomNumber;
     }
-
     public boolean verifyUser(String token) {
         Optional<Employee> employeeWithVerificationToken = employeeRepository.findByVerificationToken(token);
         if (employeeWithVerificationToken.isPresent()) {
