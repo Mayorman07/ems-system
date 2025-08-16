@@ -1,7 +1,10 @@
 package com.mayorman.employees.entities;
 
+import com.mayorman.employees.constants.Status;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,10 +40,14 @@ public class Employee implements Serializable {
     private String encryptedPassword;
     private String department;
     private String gender;
-    private String status;
     private String username;
     private Date lastLoggedIn;
     private Date lastPasswordResetDate;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status;
+    @Column(name = "verification_token")
+    private String verificationToken;
     private Timestamp createdAt;
     private Timestamp updatedAt;
 
@@ -92,12 +99,21 @@ public class Employee implements Serializable {
         this.encryptedPassword = encryptedPassword;
     }
 
-    public String getStatus() {
+
+    public Status getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         this.status = status;
+    }
+
+    public String getVerificationToken() {
+        return verificationToken;
+    }
+
+    public void setVerificationToken(String verificationToken) {
+        this.verificationToken = verificationToken;
     }
 
     public String getDepartment() {
