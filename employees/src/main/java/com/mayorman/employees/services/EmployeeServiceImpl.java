@@ -1,9 +1,13 @@
 package com.mayorman.employees.services;
 
+import com.mayorman.employees.constants.Status;
 import com.mayorman.employees.entities.Employee;
 import com.mayorman.employees.exceptions.ConflictException;
 import com.mayorman.employees.exceptions.NotFoundException;
 import com.mayorman.employees.models.data.EmployeeDto;
+import com.mayorman.employees.models.data.EmployeeStatusDto;
+import com.mayorman.employees.models.data.UserCreatedEventDto;
+import com.mayorman.employees.models.requests.EmployeeStatusCheckRequest;
 import com.mayorman.employees.repository.EmployeeRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -49,18 +53,18 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
 
         employeeDetails.setEmployeeId(UUID.randomUUID().toString());
-        // Using the injected passwordEncoder
         employeeDetails.setEncryptedPassword(passwordEncoder.encode(employeeDetails.getPassword()));
         String username = generateUsername(employeeDetails.getFirstName(), employeeDetails.getLastName());
         employeeDetails.setUsername(username);
+        employeeDetails.setStatus(Status.INACTIVE);
         Employee employeeToBeCreated = modelMapper.map(employeeDetails, Employee.class);
+        String verificationToken = UUID.randomUUID().toString();
+        employeeToBeCreated.setVerificationToken(verificationToken);
         Employee savedEmployee = employeeRepository.save(employeeToBeCreated);
-
-        rabbitTemplate.convertAndSend("user-events-exchange", "user.created", employeeDetails);
-        logger.info("Published User Created event for email: {}", savedEmployee.getEmail());
-
+        publishUserCreatedEvent(savedEmployee, verificationToken);
         return modelMapper.map(savedEmployee, EmployeeDto.class);
     }
+
 
     @Override
     @Transactional
@@ -89,17 +93,19 @@ public class EmployeeServiceImpl implements EmployeeService {
         logger.info("The employee has been deleted");
     }
 
+    // this is for a singular employee for themselves
     @Override
-    public EmployeeDto viewProfile(String email) {
+    public EmployeeStatusDto viewProfile(String email) {
         Employee existingEmployee = employeeRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     logger.info("Employee with email {} not found for viewing!", email);
                     return new NotFoundException("Employee not found!");
                 });
 
-        return modelMapper.map(existingEmployee, EmployeeDto.class);
+        return modelMapper.map(existingEmployee, EmployeeStatusDto.class);
     }
 
+    // this is for the admin, add a check here to verify only the admin can do this
     @Override
     public List<EmployeeDto> viewEmployeeDetails() {
         List<Employee> existingEmployees = employeeRepository.findAll();
@@ -111,8 +117,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .map(employee -> modelMapper.map(employee, EmployeeDto.class))
                 .collect(Collectors.toList());
     }
-
-    // --- IMPROVEMENT 2: This method is now correct ---
     @Override
     public EmployeeDto getEmployeeDetailsByEmail(String email) {
         Employee employee = employeeRepository.findByEmail(email)
@@ -120,19 +124,20 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         return modelMapper.map(employee, EmployeeDto.class);
     }
-
-
     @Override
-    public EmployeeDto getEmployeeByEmployeeId(String employeeId, String authorization) {
-        // TODO: Implement this method
-        return null;
+    public EmployeeStatusDto checkStatus(EmployeeStatusDto employeeStatusDto) {
+        Employee foundEmployee = employeeRepository.findEmployeeByUsername(employeeStatusDto.getUsername())
+                .orElseThrow(() -> new UsernameNotFoundException(employeeStatusDto.getUsername()));
+
+        logger.info("Received request to fetch status of employee with username: {}", foundEmployee.getUsername());
+        return modelMapper.map(foundEmployee, EmployeeStatusDto.class);
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
         Optional<Employee> employeeToBeLoggedIn = employeeRepository.findByEmail(username);
-        if(employeeToBeLoggedIn == null){
+        if(employeeToBeLoggedIn.isEmpty()){
             throw new UsernameNotFoundException(username);
         }
         return new User(employeeToBeLoggedIn.get().getEmail(), employeeToBeLoggedIn.get().getEncryptedPassword(),true,
@@ -140,20 +145,37 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private String generateUsername(String firstName, String lastName) {
-        // Safely get the first 3 letters of the first name
         String firstNamePart = firstName.length() < 3 ?
                 firstName :
                 firstName.substring(0, 3);
-
-        // Safely get the last 2 letters of the last name
         String lastNamePart = lastName.length() < 2 ?
                 lastName :
                 lastName.substring(lastName.length() - 2);
-
-        // Generate a random 3-digit number (100-999)
         int randomNumber = new Random().nextInt(900) + 100;
-
-        // Combine, convert to lowercase, and return the result
         return (firstNamePart + lastNamePart).toLowerCase() + randomNumber;
+    }
+
+    public boolean verifyUser(String token) {
+        Optional<Employee> employeeWithVerificationToken = employeeRepository.findByVerificationToken(token);
+        if (employeeWithVerificationToken.isPresent()) {
+            Employee employee = employeeWithVerificationToken.get();
+            employee.setStatus(Status.ACTIVE);
+            employee.setVerificationToken(null); // Clear the token so it can't be used again
+            employeeRepository.save(employee);
+            return true;
+        }
+        return false;
+    }
+
+    private void publishUserCreatedEvent(Employee savedEmployee, String verificationToken) {
+        // Create the specific DTO for the event
+        UserCreatedEventDto eventDto = new UserCreatedEventDto(
+                savedEmployee.getFirstName(),
+                savedEmployee.getEmail(),
+                verificationToken
+        );
+        // Send the correct eventDto to RabbitMQ
+        rabbitTemplate.convertAndSend("user-events-exchange", "user.created", eventDto);
+        logger.info("Published User Created event for email: {}", savedEmployee.getEmail());
     }
 }

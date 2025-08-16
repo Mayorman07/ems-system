@@ -11,4 +11,8 @@ public interface EmployeeRepository extends JpaRepository <Employee, Long>{
 
     Optional<Employee> findByEmployeeId(String userId);
 
+    Optional<Employee> findByVerificationToken(String token);
+
+    Optional<Employee> findEmployeeByUsername(String username);
+
 }
