@@ -289,7 +289,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         // 3. Loop through the inactive users and update their status
         for (Employee user : inactiveUsers) {
-            user.setStatus(Status.INACTIVE);
+            user.setStatus(Status.DEACTIVATED);
         }
         // 4. Save all the changes to the database in one batch
         employeeRepository.saveAll(inactiveUsers);
