@@ -38,8 +38,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final EmployeeService employeeService;
     private final Environment environment;
-    private final ObjectMapper objectMapper; // <-- Add this field
-
+    private final ObjectMapper objectMapper;
 
     public AuthenticationFilter(EmployeeService employeeService,Environment environment,
                                 AuthenticationManager authenticationManager,ObjectMapper objectMapper) {
@@ -71,6 +70,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
         String username = ((User)auth.getPrincipal()).getUsername();
         EmployeeDto employeeDetails = employeeService.getEmployeeDetailsByEmail(username);
+        employeeService.updateLastLoggedIn(employeeDetails.getEmployeeId());
         String tokenSecret = environment.getProperty("token.secret.key");
         if (tokenSecret == null) {
             throw new RuntimeException("Token secret key is missing in the configuration!");
@@ -83,11 +83,9 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
         Instant now = Instant.now();
 
-
         long expirationMillis = Long.parseLong(environment.getProperty("token.expiration.time"));
 
         Date expirationDate = Date.from(now.plusMillis(expirationMillis));
-
         // Use the SecretKey to sign a JWT
         String token = Jwts.builder()
                 .claim("scope", auth.getAuthorities())
@@ -96,13 +94,6 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                 .issuedAt(Date.from(now))
                 .signWith(secretKey)
                 .compact();
-
-
-        // Set the JWT in the response header (optional)
-//        res.addHeader("token", token);
-//        res.addHeader("userId", userDetails.getEmployeeId());
-
-        // Set the JWT in the response body (optional)
 
         LoginResponse loginResponse = new LoginResponse(token, employeeDetails.getEmployeeId(), expirationMillis);
         // Set the response content type to JSON

@@ -63,22 +63,6 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
 
         String userId = jwtClaimsParser.getJwtSubject();
 
-//        byte[] secretKeyBytes = Base64.getEncoder().encode(tokenSecret.getBytes());
-//        SecretKey secretKey = Keys.hmacShaKeyFor(secretKeyBytes);
-//
-//        JwtParser parser = Jwts.parser()
-//                .verifyWith(secretKey)
-//                .build();
-
-//        byte[] secretKeyBytes = tokenSecret.getBytes(StandardCharsets.UTF_8);
-//        SecretKey secretKey = Keys.hmacShaKeyFor(secretKeyBytes);
-//        JwtParser parser = Jwts.parser()
-//                .verifyWith(secretKey)
-//                .build();
-//
-//        Claims claims = parser.parseSignedClaims(token).getPayload();
-//        String userId = (String) claims.get("sub");
-
         if (userId == null) {
             return null;
         }

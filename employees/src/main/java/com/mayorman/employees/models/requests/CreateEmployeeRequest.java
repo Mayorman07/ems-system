@@ -1,5 +1,6 @@
 package com.mayorman.employees.models.requests;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -11,6 +12,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CreateEmployeeRequest {
     @NotNull(message ="First name cannot be null")
     @Size(min = 2,message = "First name cant be less than two characters")
@@ -29,7 +31,6 @@ public class CreateEmployeeRequest {
     @NotEmpty(message = "Gender field cannot be empty")
     private String gender;
     private String department;
-
 
     public String getFirstName() {
         return firstName;

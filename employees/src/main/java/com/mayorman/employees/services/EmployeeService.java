@@ -1,7 +1,9 @@
 package com.mayorman.employees.services;
 
+import com.mayorman.employees.models.data.CustomUserDetails;
 import com.mayorman.employees.models.data.EmployeeDto;
 import com.mayorman.employees.models.data.EmployeeStatusDto;
+import com.mayorman.employees.models.requests.CreateAdminRequest;
 import org.springframework.security.core.userdetails.UserDetailsService;
 
 import java.util.List;
@@ -15,14 +17,20 @@ public interface EmployeeService extends UserDetailsService {
     void deleteEmployee(String email);
 
     EmployeeStatusDto  viewProfile(String email);
-
-    //has to be a list
-
+    void updateLastLoggedIn(String employeeId);
    List<EmployeeDto> viewEmployeeDetails();
+
+   List<EmployeeDto> getEmployeesInDepartment(String department);
 
     EmployeeDto getEmployeeDetailsByEmail(String email);
 
+    void assignManagerRole(String employeeId);
+
     EmployeeStatusDto checkStatus(EmployeeStatusDto employeeStatusDto);
 
+    EmployeeDto createInitialAdmin (EmployeeDto request);
+
     boolean verifyUser(String token);
+
+    int deactivateInactiveUsers();
 }

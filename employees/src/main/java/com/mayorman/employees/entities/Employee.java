@@ -1,13 +1,18 @@
 package com.mayorman.employees.entities;
 
 import com.mayorman.employees.constants.Status;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -16,6 +21,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Collection;
 import java.util.Date;
 
 @Entity
@@ -50,6 +56,11 @@ public class Employee implements Serializable {
     private String verificationToken;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+
+    @ManyToMany(cascade = CascadeType.PERSIST ,fetch = FetchType.EAGER )
+    @JoinTable(name="employees_roles", joinColumns =@JoinColumn(name = "employees_id", referencedColumnName = "id"),inverseJoinColumns
+            = @JoinColumn(name = "roles_id", referencedColumnName = "id"))
+    Collection<Role> roles;
 
     public long getId() {
         return id;

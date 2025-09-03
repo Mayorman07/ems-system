@@ -8,19 +8,25 @@ import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+
+
 @Configuration
 public class ModelMapperConfig {
     @Bean
     public ModelMapper modelMapper() {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STANDARD);
-        // This configuration is essential to prevent the error
-        TypeMap<EmployeeDto, Employee> typeMap = modelMapper.createTypeMap(EmployeeDto.class, Employee.class);
-        typeMap.addMappings(mapper -> mapper.skip(Employee::setId));
-        // This tells ModelMapper not to set a destination field to null
-        // if its corresponding source field is null.
-        modelMapper.getConfiguration().setSkipNullEnabled(true);
-        // You can add specific mappings here if needed
+
+        // Rule 1: For converting a DTO -> Entity (your original rule)
+        // This prevents the request from setting the ID field
+        TypeMap<EmployeeDto, Employee> dtoToEntityMap = modelMapper.createTypeMap(EmployeeDto.class, Employee.class);
+        dtoToEntityMap.addMappings(mapper -> mapper.skip(Employee::setId));
+
+        // Rule 2: For converting an Entity -> DTO (our new rule)
+        // This skips the 'roles' field so you can map it manually
+        TypeMap<Employee, EmployeeDto> entityToDtoMap = modelMapper.createTypeMap(Employee.class, EmployeeDto.class);
+        entityToDtoMap.addMappings(mapper -> mapper.skip(EmployeeDto::setRoles));
+
         return modelMapper;
     }
 }

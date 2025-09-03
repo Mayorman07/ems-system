@@ -4,6 +4,7 @@ import com.mayorman.employees.constants.Status;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -14,7 +15,8 @@ public class EmployeeStatusDto {
     private String lastName;
     private String email;
     private Status status;
-    private String role;
+//    private List<String> roles;
+    private String roles; // change this to the above and check the mapping very well and the status check response
     private String employeeId;
     private String username;
     //    private Date lastLoggedIn;

@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,4 +26,5 @@ public class EmployeeDto implements Serializable {
     private String username;
     private String createdAt;
     private Status status;
+    private List<String> roles;
 }

@@ -22,6 +22,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 //@EnableMethodSecurity(prePostEnabled = true)
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class WebSecurity {
 
     private final EmployeeService employeeService;
@@ -69,6 +70,7 @@ public class WebSecurity {
         http.authorizeHttpRequests(authorize ->
                         authorize
 //                                .requestMatchers(HttpMethod.GET, "/status/check").authenticated()
+                                .requestMatchers("/api/setup/create-admin").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/status/check").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/verify").permitAll()
                                 .requestMatchers("/verification_success.html", "/verification_failure.html").permitAll()
