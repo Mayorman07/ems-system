@@ -75,7 +75,6 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         if (tokenSecret == null) {
             throw new RuntimeException("Token secret key is missing in the configuration!");
         }
-        // Generate a secure key (replace with securely generated key bytes)
 //        assert tokenSecret != null;
         byte[] secretKeyBytes = tokenSecret.getBytes(StandardCharsets.UTF_8);
         // Create a SecretKey using Keys.hMacShaKeyFor -> length of string determines algorithm to be used
