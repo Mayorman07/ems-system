@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Failed</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Using a yellow/amber tinted background for a warning state */
+            background-color: #fefce8; /* yellow-50 */
+            background-image:
+                radial-gradient(circle at 1px 1px, #fde68a 1px, transparent 0); /* yellow-200 */
+            background-size: 2rem 2rem;
+            animation: move-background 40s linear infinite;
+        }
+
+        @keyframes move-background {
+            from { background-position: 0 0; }
+            to { background-position: 200% 200%; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-all {
+            animation: fadeIn 0.6s ease-out 0.1s forwards;
+            opacity: 0;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center h-screen p-4">
+
+<!-- Card with "frosted glass" effect -->
+<div class="bg-white/70 backdrop-blur-xl p-12 rounded-2xl shadow-lg text-center max-w-md w-full mx-auto border border-white/30 animate-all">
+
+  <!-- Warning Icon -->
+  <div class="mb-6">
+    <svg class="w-20 h-20 mx-auto text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+  </div>
+
+  <!-- Message -->
+  <h1 class="text-3xl font-bold text-gray-800 mb-3">Login Failed</h1>
+  <p class="text-gray-600 mb-8 text-lg">
+    The email or password you entered is incorrect. Please check your credentials and try again.
+  </p>
+
+  <!-- Action Buttons -->
+  <div class="flex flex-col items-center space-y-4">
+    <a href="/login" class="w-full text-center bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-6 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-amber-300">
+      Try Again
+    </a>
+    <p class="text-sm text-gray-500">
+      Forgot your password?
+      <a href="/forgot-password" class="font-semibold text-indigo-600 hover:underline">Reset it here</a>
+    </p>
+  </div>
+</div>
+
+</body>
+</html>

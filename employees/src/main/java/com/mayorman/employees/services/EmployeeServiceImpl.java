@@ -15,7 +15,8 @@ import com.mayorman.employees.models.requests.EmployeeStatusCheckRequest;
 import com.mayorman.employees.repository.EmployeeRepository;
 import com.mayorman.employees.repository.RoleRepository;
 import java.util.Calendar;
-import jakarta.transaction.Transactional;
+//import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -24,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.core.env.Environment;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -207,6 +209,10 @@ public class EmployeeServiceImpl implements EmployeeService {
         if(employeeToBeLoggedIn.isEmpty()){
             throw new UsernameNotFoundException(username);
         }
+
+        if (employeeToBeLoggedIn.get().getStatus() != Status.ACTIVE) {
+            throw new DisabledException("User account is not active. Status: " + employeeToBeLoggedIn.get().getStatus());
+        }
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         Collection<Role> roles = employeeToBeLoggedIn.get().getRoles();
 
@@ -275,24 +281,81 @@ public class EmployeeServiceImpl implements EmployeeService {
         logger.info("Published User Created event for email: {}", savedEmployee.getEmail());
     }
 
-    @Transactional
-    public int deactivateInactiveUsers() {
-        // 1. Calculate the cutoff date (e.g., 2 months ago)
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.MONTH, -2);
-        Date cutoffDate = cal.getTime();
-        // 2. Find all active users who haven't logged in since the cutoff date
-        List<Employee> inactiveUsers = employeeRepository.findAllByStatusAndLastLoggedInBefore(Status.ACTIVE, cutoffDate);
+//    @Transactional
+//    public int deactivateInactiveUsers() {
+//        // 1. Calculate the cutoff date (e.g., 2 months ago)
+//        Calendar cal = Calendar.getInstance();
+////        cal.add(Calendar.MONTH, -2);
+//        cal.add(Calendar.MINUTE, -3);
+//        Date cutoffDate = cal.getTime();
+//        Date debugCutoff = cal.getTime();
+//
+//        List<Employee> inactiveByTime = employeeRepository.findAllByStatusAndLastLoggedInBefore(Status.ACTIVE, debugCutoff);
+//        logger.info("[DEBUG] Found {} users inactive by time.", inactiveByTime.size());
+//        inactiveByTime.forEach(inactive -> logger.info("[DEBUG] Inactive user by time: {}", inactive.getUsername()));
+//
+//        logger.info("--- ENDING SCHEDULER DEBUG ---");
+//
+//        // 2. Find all active users who haven't logged in since the cutoff date
+//        List<String> rolesToExclude = Arrays.asList("ROLE_ADMIN");
+//
+//        logger.info("[DEBUG] Found {} users with ROLE_ADMIN.", rolesToExclude.size());
+//        rolesToExclude.forEach(admin -> logger.info("[DEBUG] Admin user: {}", rolesToExclude));
+//
+//
+//        // Test 2: Let's see who Spring thinks are employees
+//        List<Employee> employees = employeeRepository.findByRoles_Name("ROLE_EMPLOYEE");
+//        logger.info("[DEBUG] Found {} users with ROLE_EMPLOYEE.", employees.size());
+//        employees.forEach(emp -> logger.info("[DEBUG] Employee user: {}", emp.getUsername()));
+//
+//
+//        List<Employee> inactiveUsers = employeeRepository.findAllByStatusAndLastLoggedInBeforeAndRoles_NameNotIn(
+//                Status.ACTIVE,
+//                cutoffDate,
+//                rolesToExclude
+//        );
+//
+//        if (inactiveUsers.isEmpty()) {
+//            return 0;
+//        }
+//        // 3. Loop through the inactive users and update their status
+//        for (Employee user : inactiveUsers) {
+//            user.setStatus(Status.DEACTIVATED);
+//        }
+//        // 4. Save all the changes to the database in one batch
+//        employeeRepository.saveAll(inactiveUsers);
+//        return inactiveUsers.size();
+//    }
 
-        if (inactiveUsers.isEmpty()) {
+
+    @Transactional // Ensures the changes are saved to the database
+    public int deactivateInactiveUsers() {
+        // 1. Calculate the cutoff date
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MINUTE, -3);
+        Date cutoffDate = cal.getTime();
+
+        // 2. Find all potentially inactive users
+        List<Employee> potentiallyInactiveUsers = employeeRepository.findAllByStatusAndLastLoggedInBefore(Status.ACTIVE, cutoffDate);
+
+        // 3. Filter out any admins from that list
+        List<Employee> finalUsersToDeactivate = potentiallyInactiveUsers.stream()
+                .filter(user -> user.getRoles().stream()
+                        .noneMatch(role -> role.getName().equals("ROLE_ADMIN")))
+                .collect(Collectors.toList());
+
+        if (finalUsersToDeactivate.isEmpty()) {
             return 0; // No users to deactivate
         }
-        // 3. Loop through the inactive users and update their status
-        for (Employee user : inactiveUsers) {
+
+        for (Employee user : finalUsersToDeactivate) {
             user.setStatus(Status.DEACTIVATED);
         }
-        // 4. Save all the changes to the database in one batch
-        employeeRepository.saveAll(inactiveUsers);
-        return inactiveUsers.size();
+
+        // 5. Save all the changes to the database
+        employeeRepository.saveAll(finalUsersToDeactivate);
+
+        logger.info("SUCCESS: Deactivated {} users", finalUsersToDeactivate.size());
+        return finalUsersToDeactivate.size();
     }
 }
