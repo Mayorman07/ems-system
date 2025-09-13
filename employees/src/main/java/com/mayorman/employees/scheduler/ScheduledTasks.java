@@ -17,9 +17,9 @@ public class ScheduledTasks {
         this.employeeService = employeeService;
     }
 
-    // This will run at 2 AM every day.
-//    @Scheduled(cron = "0 0 2 * * ?")
-    @Scheduled(cron = "0 0/3 * * * ?")
+    // This will run every 2 minutes.
+//    @Scheduled(cron = "0 0/3 * * * ?")
+    @Scheduled(cron = "0 0 0 1 */2 ?")
     public void deactivateInactiveUsers() {
         logger.info("Running scheduled task to deactivate inactive users...");
         int deactivatedCount = employeeService.deactivateInactiveUsers();
