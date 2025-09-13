@@ -21,4 +21,5 @@ public interface EmployeeRepository extends JpaRepository <Employee, Long>{
     List<Employee> findAllByDepartment(String department);
     List<Employee> findByRoles_Name(String roleName);
     List<Employee> findAllByStatusAndLastLoggedInBefore(Status status, Date cutoffDate );
+    Optional<Employee> findByPasswordResetToken(String token);
 }

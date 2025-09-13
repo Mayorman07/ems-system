@@ -56,6 +56,11 @@ public class Employee implements Serializable {
     private String verificationToken;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    @Column(name = "password_reset_token")
+    private String passwordResetToken;
+    @Column(name = "password_reset_token_expiry_date")
+    private Date passwordResetTokenExpiryDate;
+
 
     @ManyToMany(cascade = CascadeType.PERSIST ,fetch = FetchType.EAGER )
     @JoinTable(name="employees_roles", joinColumns =@JoinColumn(name = "employees_id", referencedColumnName = "id"),inverseJoinColumns
@@ -181,6 +186,30 @@ public class Employee implements Serializable {
 
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getPasswordResetToken() {
+        return passwordResetToken;
+    }
+
+    public void setPasswordResetToken(String passwordResetToken) {
+        this.passwordResetToken = passwordResetToken;
+    }
+
+    public Date getPasswordResetTokenExpiryDate() {
+        return passwordResetTokenExpiryDate;
+    }
+
+    public void setPasswordResetTokenExpiryDate(Date passwordResetTokenExpiryDate) {
+        this.passwordResetTokenExpiryDate = passwordResetTokenExpiryDate;
+    }
+
+    public Collection<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Collection<Role> roles) {
+        this.roles = roles;
     }
 
     @PrePersist

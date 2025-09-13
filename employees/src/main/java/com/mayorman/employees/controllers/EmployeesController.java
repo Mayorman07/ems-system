@@ -1,6 +1,5 @@
 package com.mayorman.employees.controllers;
 
-import com.mayorman.employees.exceptions.NotFoundException;
 import com.mayorman.employees.models.data.CustomUserDetails;
 import com.mayorman.employees.models.data.EmployeeStatusDto;
 import com.mayorman.employees.models.requests.CreateEmployeeRequest;
@@ -13,7 +12,6 @@ import com.mayorman.employees.validations.InputValidator;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.convention.MatchingStrategies;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +30,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 

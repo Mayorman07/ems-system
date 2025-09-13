@@ -49,7 +49,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/actuator/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,"/encrypt").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST,"/decrypt").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET,"/**").hasAnyRole("CLIENT", "ADMIN")
+                        .requestMatchers(HttpMethod.GET,"/**").hasAnyRole("USER","MANAGER","ADMIN")
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/actuator/**"))

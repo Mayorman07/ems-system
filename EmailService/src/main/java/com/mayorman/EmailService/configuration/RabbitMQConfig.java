@@ -11,30 +11,37 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    // 1. Define the "mailbox" (queue) for our service to listen to.
-    @Bean
-    Queue userCreatedEmailQueue() {
-        // The queue is named "user-created-email-queue"
-        // 'true' means the queue is durable (it won't be lost if RabbitMQ restarts)
-        return new Queue("user-created-email-queue", true);
-    }
+    public static final String USER_EVENTS_EXCHANGE = "user-events-exchange";
+    public static final String USER_CREATED_QUEUE = "user-created-email-queue";
+    public static final String PASSWORD_RESET_QUEUE = "password-reset-email-queue";
 
-    // 2. Define the "post office" (exchange) where messages are sent.
-    // This name MUST match the one you created in the employees service.
     @Bean
     TopicExchange userEventsExchange() {
-        return new TopicExchange("user-events-exchange");
+        return new TopicExchange(USER_EVENTS_EXCHANGE);
     }
 
-    // 3. Create a binding. This is the rule that connects our mailbox to the post office.
-    // It says: "Send any message with the topic 'user.created' to my queue."
+    // --- Queues ---
+
+    // 1. Queue for user creation emails
     @Bean
-    Binding binding(Queue queue, TopicExchange exchange) {
-        return BindingBuilder.bind(queue).to(exchange).with("user.created");
+    Queue userCreatedEmailQueue() {
+        return new Queue(USER_CREATED_QUEUE, true);
+    }
+    @Bean
+    Queue passwordResetEmailQueue() {
+        return new Queue(PASSWORD_RESET_QUEUE, true); // durable = true
     }
 
-    // --- ADD THIS NEW BEAN ---
-    // This tells Spring to expect JSON messages and how to convert them.
+    @Bean
+    Binding userCreatedBinding(Queue userCreatedEmailQueue, TopicExchange userEventsExchange) {
+        return BindingBuilder.bind(userCreatedEmailQueue).to(userEventsExchange).with("user.created");
+    }
+    @Bean
+    Binding passwordResetBinding(Queue passwordResetEmailQueue, TopicExchange userEventsExchange) {
+        // We assume the routing key will be "password.reset". Change if needed.
+        return BindingBuilder.bind(passwordResetEmailQueue).to(userEventsExchange).with("password.reset");
+    }
+
     @Bean
     public Jackson2JsonMessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
