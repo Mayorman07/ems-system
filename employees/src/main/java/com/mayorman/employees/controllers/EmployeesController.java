@@ -82,7 +82,6 @@ public class EmployeesController {
         logger.info("Received request to fetch status of employee with username: {}", employeeStatusCheckRequest);
         EmployeeStatusDto employeeStatusDto = modelMapper.map(employeeStatusCheckRequest,EmployeeStatusDto.class);
         EmployeeStatusDto requestedEmployeeStatusDto = employeeService.checkStatus(employeeStatusDto);
-        logger.info("Received request to fetch status of employeezzz with from db username: {}", requestedEmployeeStatusDto);
         EmployeeStatusCheckResponse returnValue = modelMapper.map(requestedEmployeeStatusDto, EmployeeStatusCheckResponse.class);
         return ResponseEntity.status(HttpStatus.FOUND).body(returnValue);
     }
@@ -97,7 +96,6 @@ public class EmployeesController {
     public ResponseEntity<EmployeeStatusCheckResponse> viewProfile(@PathVariable("email") String email){
         logger.info("Received request to view personal employee with email: {}", email);
         EmployeeStatusDto requestedEmployeeDetails = employeeService.viewProfile(email);
-        logger.info("Employee profile with email {} viewed successfully.", email);
         EmployeeStatusCheckResponse returnValue = modelMapper.map(requestedEmployeeDetails,EmployeeStatusCheckResponse.class);
         return ResponseEntity.ok(returnValue);
     }
