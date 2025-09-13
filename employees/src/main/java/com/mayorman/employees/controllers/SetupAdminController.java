@@ -3,7 +3,6 @@ package com.mayorman.employees.controllers;
 import com.mayorman.employees.exceptions.NotFoundException;
 import com.mayorman.employees.models.data.EmployeeDto;
 import com.mayorman.employees.models.requests.CreateAdminRequest;
-import com.mayorman.employees.models.requests.CreateEmployeeRequest;
 import com.mayorman.employees.models.responses.CreateEmployeeResponse;
 import com.mayorman.employees.services.EmployeeService;
 import com.mayorman.employees.validations.InputValidator;
@@ -13,7 +12,6 @@ import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,8 +26,7 @@ public class SetupAdminController {
 
     private final EmployeeService employeeService;
     private final ModelMapper modelMapper;
-    private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class); // Use SLF4J logger
-
+    private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class);
     @PostMapping("/create-admin")
     public ResponseEntity<CreateEmployeeResponse> createInitialAdmin( @Valid @RequestBody CreateAdminRequest request, BindingResult bindingResult){
         logger.info("The incoming create employee request {} " , request);
@@ -45,7 +42,6 @@ public class SetupAdminController {
              CreateEmployeeResponse errorResponse = new CreateEmployeeResponse(e.getMessage());
              return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
         }catch (NotFoundException e) {
-            // This handles other errors, like the ROLE_ADMIN not being found
             CreateEmployeeResponse errorResponse = new CreateEmployeeResponse(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }

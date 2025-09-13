@@ -9,13 +9,14 @@ import com.mayorman.employees.exceptions.NotFoundException;
 import com.mayorman.employees.models.data.CustomUserDetails;
 import com.mayorman.employees.models.data.EmployeeDto;
 import com.mayorman.employees.models.data.EmployeeStatusDto;
+import com.mayorman.employees.models.data.PasswordResetEventDto;
 import com.mayorman.employees.models.data.UserCreatedEventDto;
-import com.mayorman.employees.models.requests.CreateAdminRequest;
-import com.mayorman.employees.models.requests.EmployeeStatusCheckRequest;
 import com.mayorman.employees.repository.EmployeeRepository;
 import com.mayorman.employees.repository.RoleRepository;
 import java.util.Calendar;
-//import jakarta.transaction.Transactional;
+
+import com.mayorman.employees.utils.UsernameGeneration;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +29,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -54,9 +54,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final RoleRepository roleRepository;
     private final RabbitTemplate rabbitTemplate;
-    private final PasswordEncoder passwordEncoder; // <-- IMPROVEMENT 1: Using the interface
+    private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
     private final Environment environment;
+    private UsernameGeneration usernameGeneration;
 
     private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class);
 
@@ -232,20 +233,13 @@ public class EmployeeServiceImpl implements EmployeeService {
                 authorities,employeeToBeLoggedIn.get().getEmployeeId(),
                 employeeToBeLoggedIn.get().getDepartment());
     }
-
     @Transactional
     public void updateLastLoggedIn(String employeeId) {
-        // 1. Find the employee in the database
         Employee employee = employeeRepository.findByEmployeeId(employeeId)
                 .orElseThrow(() -> new NotFoundException("Employee not found with ID: " + employeeId));
-
-        // 2. Set the lastLoggedIn field to the current date and time
         employee.setLastLoggedIn(new Date());
-
-        // 3. Save the updated entity. The @Transactional annotation ensures this is committed.
         employeeRepository.save(employee);
     }
-
     private String generateUsername(String firstName, String lastName) {
         String firstNamePart = firstName.length() < 3 ?
                 firstName :
@@ -268,91 +262,98 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         return false;
     }
-
     private void publishUserCreatedEvent(Employee savedEmployee, String verificationToken) {
-        // Create the specific DTO for the event
         UserCreatedEventDto eventDto = new UserCreatedEventDto(
                 savedEmployee.getFirstName(),
                 savedEmployee.getEmail(),
                 verificationToken
         );
-        // Send the correct eventDto to RabbitMQ
         rabbitTemplate.convertAndSend("user-events-exchange", "user.created", eventDto);
         logger.info("Published User Created event for email: {}", savedEmployee.getEmail());
     }
 
-//    @Transactional
-//    public int deactivateInactiveUsers() {
-//        // 1. Calculate the cutoff date (e.g., 2 months ago)
-//        Calendar cal = Calendar.getInstance();
-////        cal.add(Calendar.MONTH, -2);
-//        cal.add(Calendar.MINUTE, -3);
-//        Date cutoffDate = cal.getTime();
-//        Date debugCutoff = cal.getTime();
-//
-//        List<Employee> inactiveByTime = employeeRepository.findAllByStatusAndLastLoggedInBefore(Status.ACTIVE, debugCutoff);
-//        logger.info("[DEBUG] Found {} users inactive by time.", inactiveByTime.size());
-//        inactiveByTime.forEach(inactive -> logger.info("[DEBUG] Inactive user by time: {}", inactive.getUsername()));
-//
-//        logger.info("--- ENDING SCHEDULER DEBUG ---");
-//
-//        // 2. Find all active users who haven't logged in since the cutoff date
-//        List<String> rolesToExclude = Arrays.asList("ROLE_ADMIN");
-//
-//        logger.info("[DEBUG] Found {} users with ROLE_ADMIN.", rolesToExclude.size());
-//        rolesToExclude.forEach(admin -> logger.info("[DEBUG] Admin user: {}", rolesToExclude));
-//
-//
-//        // Test 2: Let's see who Spring thinks are employees
-//        List<Employee> employees = employeeRepository.findByRoles_Name("ROLE_EMPLOYEE");
-//        logger.info("[DEBUG] Found {} users with ROLE_EMPLOYEE.", employees.size());
-//        employees.forEach(emp -> logger.info("[DEBUG] Employee user: {}", emp.getUsername()));
-//
-//
-//        List<Employee> inactiveUsers = employeeRepository.findAllByStatusAndLastLoggedInBeforeAndRoles_NameNotIn(
-//                Status.ACTIVE,
-//                cutoffDate,
-//                rolesToExclude
-//        );
-//
-//        if (inactiveUsers.isEmpty()) {
-//            return 0;
-//        }
-//        // 3. Loop through the inactive users and update their status
-//        for (Employee user : inactiveUsers) {
-//            user.setStatus(Status.DEACTIVATED);
-//        }
-//        // 4. Save all the changes to the database in one batch
-//        employeeRepository.saveAll(inactiveUsers);
-//        return inactiveUsers.size();
-//    }
+    @Transactional
+    public boolean requestPasswordReset(String email) {
+        Optional<Employee> employeeOptional = employeeRepository.findByEmail(email);
+        logger.info("See the employee returned {} ", employeeOptional);
 
+        if (employeeOptional.isEmpty()) {
+            // We return true but do nothing to prevent email enumeration attacks.
+            logger.warn("Password reset requested for non-existent email: {}", email);
+            return true;
+        }
 
-    @Transactional // Ensures the changes are saved to the database
+        Employee employee = employeeOptional.get();
+        String token = UUID.randomUUID().toString();
+
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MINUTE, 15);
+
+        employee.setPasswordResetToken(token);
+        employee.setPasswordResetTokenExpiryDate(cal.getTime());
+        employeeRepository.save(employee);
+
+        // Publish the event to RabbitMQ
+        PasswordResetEventDto eventDto = new PasswordResetEventDto(
+                employee.getEmail(),
+                employee.getFirstName(),
+                token
+        );
+        rabbitTemplate.convertAndSend("password-reset-email-queue", eventDto);
+
+        logger.info("Published password reset event for email: {}", email);
+        return true;
+    }
+
+    @Transactional
+    public boolean performPasswordReset(String token, String newPassword) {
+        // 1. Find the user by their password reset token
+        Optional<Employee> employeeOptional = employeeRepository.findByPasswordResetToken(token);
+
+        if (employeeOptional.isEmpty()) {
+            logger.warn("Password reset attempted with an invalid token.");
+            return false; // Token was not found
+        }
+        Employee employee = employeeOptional.get();
+        // 2. Check if the token has expired
+        if (employee.getPasswordResetTokenExpiryDate().before(new Date())) {
+            logger.warn("Expired password reset token used for user: {}", employee.getEmail());
+            // Invalidate the expired token for security
+            employee.setPasswordResetToken(null);
+            employee.setPasswordResetTokenExpiryDate(null);
+            employeeRepository.save(employee);
+            return false; // Token has expired
+        }
+        // 3. If the token is valid, update the password
+        employee.setEncryptedPassword(passwordEncoder.encode(newPassword));
+
+        // 4. CRITICAL: Invalidate the token so it cannot be used again
+        employee.setPasswordResetToken(null);
+        employee.setPasswordResetTokenExpiryDate(null);
+
+        employeeRepository.save(employee);
+
+        logger.info("Password successfully reset for user: {}", employee.getEmail());
+        return true;
+    }
+
+    @Transactional
     public int deactivateInactiveUsers() {
-        // 1. Calculate the cutoff date
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MINUTE, -3);
         Date cutoffDate = cal.getTime();
-
-        // 2. Find all potentially inactive users
         List<Employee> potentiallyInactiveUsers = employeeRepository.findAllByStatusAndLastLoggedInBefore(Status.ACTIVE, cutoffDate);
-
         // 3. Filter out any admins from that list
         List<Employee> finalUsersToDeactivate = potentiallyInactiveUsers.stream()
                 .filter(user -> user.getRoles().stream()
                         .noneMatch(role -> role.getName().equals("ROLE_ADMIN")))
                 .collect(Collectors.toList());
-
         if (finalUsersToDeactivate.isEmpty()) {
-            return 0; // No users to deactivate
+            return 0;
         }
-
         for (Employee user : finalUsersToDeactivate) {
             user.setStatus(Status.DEACTIVATED);
         }
-
-        // 5. Save all the changes to the database
         employeeRepository.saveAll(finalUsersToDeactivate);
 
         logger.info("SUCCESS: Deactivated {} users", finalUsersToDeactivate.size());

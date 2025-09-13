@@ -1,7 +1,5 @@
 package com.mayorman.employees.controllers;
 
-// File: src/main/java/com/mayorman/employees/controllers/VerificationController.java
-
 import com.mayorman.employees.services.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -17,7 +15,6 @@ import java.net.URI;
 public class VerificationController {
 
     private final EmployeeService employeeService;
-
     @GetMapping("/verify")
     public ResponseEntity<Object> verifyUser(@RequestParam("token") String token) {
         System.out.println("✅ VerificationController called with token: " + token);

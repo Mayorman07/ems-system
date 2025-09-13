@@ -31,7 +31,6 @@ public class WebSecurity {
     private final Environment environment;
     private final ObjectMapper objectMapper;
     private final CustomAuthenticationFailureHandler failureHandler;
-
     public WebSecurity(Environment environment, EmployeeService employeeService, BCryptPasswordEncoder bCryptPasswordEncoder
             , ObjectMapper objectMapper, CustomAuthenticationFailureHandler failureHandler){
         this.environment = environment;
@@ -40,55 +39,42 @@ public class WebSecurity {
         this.objectMapper = objectMapper;
         this.failureHandler = failureHandler;
     }
-
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
-
     @Bean
     protected SecurityFilterChain configure (HttpSecurity http) throws Exception{
 
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
 
-
-        //method that will be used to look up in a database
         authenticationManagerBuilder.userDetailsService(employeeService)
                 .passwordEncoder(bCryptPasswordEncoder);
 
         AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
-
-        //Create Authentication filter
         AuthenticationFilter authenticationFilter = new AuthenticationFilter(employeeService, environment,authenticationManager,objectMapper);
         authenticationFilter.setAuthenticationFailureHandler(failureHandler);
 
         authenticationFilter.setFilterProcessesUrl(environment.getProperty("login.url.path"));
 
         http
-                // Disable CSRF protection since this application is stateless (e.g., using JWTs)
                 .csrf(AbstractHttpConfigurer::disable);
 
-        // Configure authorization requests
         http.authorizeHttpRequests(authorize ->
                         authorize
-//                                .requestMatchers(HttpMethod.GET, "/status/check").authenticated()
                                 .requestMatchers("/api/setup/create-admin").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/status/check").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/verify").permitAll()
+                                .requestMatchers("/password-reset/**").permitAll()
                                 .requestMatchers("/verification_success.html", "/verification_failure.html").permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/employees/**")).permitAll()
-
-
                                 .requestMatchers(new AntPathRequestMatcher("/actuator/**", HttpMethod.GET.name())).permitAll()
-//                                        .requestMatchers(new AntPathRequestMatcher("/actuator/circuitbreakerevents", HttpMethod.GET.name())).permitAll()
-
                                 .requestMatchers(new AntPathRequestMatcher("/h2-console/**")).permitAll()
                                 .anyRequest().authenticated())
                 .addFilter(new AuthorizationFilter(authenticationManager,environment))
                 .addFilter(authenticationFilter)
 
                 .authenticationManager(authenticationManager)
-                // Configure session management as stateless
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 );

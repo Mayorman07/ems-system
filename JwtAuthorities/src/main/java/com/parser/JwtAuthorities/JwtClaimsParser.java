@@ -29,9 +29,8 @@ public class JwtClaimsParser {
         byte[] secretKeyBytes = tokenSecret.getBytes(StandardCharsets.UTF_8);
         SecretKey signInKey = Keys.hmacShaKeyFor(secretKeyBytes);
 
-        // Create a JwtParser instance using the builder...used to verify the signature of the incoming jwt token
         JwtParser jwtParser = Jwts.parser()
-                .verifyWith(signInKey)  // Set the signing key
+                .verifyWith(signInKey)
                 .build();
 
         return jwtParser.parse(jwtString);
