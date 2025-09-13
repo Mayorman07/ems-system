@@ -340,7 +340,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public int deactivateInactiveUsers() {
         Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.MINUTE, -3);
+//        cal.add(Calendar.MINUTE, -3);
+        cal.add(Calendar.MONTH, -2);
         Date cutoffDate = cal.getTime();
         List<Employee> potentiallyInactiveUsers = employeeRepository.findAllByStatusAndLastLoggedInBefore(Status.ACTIVE, cutoffDate);
         // 3. Filter out any admins from that list
