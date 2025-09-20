@@ -1,5 +1,7 @@
 package com.mayorman.employees;
 
+//import io.github.cdimascio.dotenv.Dotenv;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.actuate.web.exchanges.HttpExchangeRepository;
 import org.springframework.boot.actuate.web.exchanges.InMemoryHttpExchangeRepository;
@@ -29,5 +31,6 @@ public class EmployeesApplication {
 	public HttpExchangeRepository httpTraceRepository(){
 		return new InMemoryHttpExchangeRepository();
 	}
+	// ✅ Add this bean to your class for debugging
 
 }

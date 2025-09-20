@@ -26,3 +26,5 @@ public class ScheduledTasks {
         logger.info("Scheduled task finished. Deactivated {} users.", deactivatedCount);
     }
 }
+
+// put cron expression in application.properties, add a shedlock

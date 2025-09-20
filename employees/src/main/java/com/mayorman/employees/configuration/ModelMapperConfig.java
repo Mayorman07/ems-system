@@ -17,12 +17,10 @@ public class ModelMapperConfig {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STANDARD);
 
-        // Rule 1: For converting a DTO -> Entity (your original rule)
         // This prevents the request from setting the ID field
         TypeMap<EmployeeDto, Employee> dtoToEntityMap = modelMapper.createTypeMap(EmployeeDto.class, Employee.class);
         dtoToEntityMap.addMappings(mapper -> mapper.skip(Employee::setId));
 
-        // Rule 2: For converting an Entity -> DTO (our new rule)
         // This skips the 'roles' field so you can map it manually
         TypeMap<Employee, EmployeeDto> entityToDtoMap = modelMapper.createTypeMap(Employee.class, EmployeeDto.class);
         entityToDtoMap.addMappings(mapper -> mapper.skip(EmployeeDto::setRoles));
