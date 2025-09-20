@@ -4,7 +4,7 @@ import java.util.Random;
 
 public class UsernameGeneration {
 
-    private String generateUsername(String firstName, String lastName) {
+    public String generateUsername(String firstName, String lastName) {
         String firstNamePart = firstName.length() < 3 ?
                 firstName :
                 firstName.substring(0, 3);

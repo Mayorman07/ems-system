@@ -57,8 +57,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
     private final Environment environment;
-    private UsernameGeneration usernameGeneration;
-
+    public UsernameGeneration usernameGeneration;
     private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class);
 
     @Override
@@ -71,8 +70,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employeeDetails.setEmployeeId(UUID.randomUUID().toString());
         employeeDetails.setEncryptedPassword(passwordEncoder.encode(employeeDetails.getPassword()));
-        String username = generateUsername(employeeDetails.getFirstName(), employeeDetails.getLastName());
-        employeeDetails.setUsername(username);
+//        String username = generateUsername(employeeDetails.getFirstName(), employeeDetails.getLastName());
+//        employeeDetails.setUsername(username);
+        employeeDetails.setUsername(usernameGeneration.generateUsername(employeeDetails.getFirstName(),employeeDetails.getLastName()));
         employeeDetails.setStatus(Status.INACTIVE);
         Employee employeeToBeCreated = modelMapper.map(employeeDetails, Employee.class);
         String verificationToken = UUID.randomUUID().toString();
@@ -193,8 +193,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         adminEntity.setVerificationToken(UUID.randomUUID().toString());
         adminEntity.setStatus(Status.ACTIVE);
         adminEntity.setRoles(Arrays.asList(adminRole));
-        String adminUsername = generateUsername(request.getFirstName(), request.getLastName());
-        adminEntity.setUsername(adminUsername);
+        adminEntity.setUsername(usernameGeneration.generateUsername(request.getFirstName(), request.getLastName()));
         Employee savedAdmin = employeeRepository.save(adminEntity);
         EmployeeDto returnDto = modelMapper.map(savedAdmin, EmployeeDto.class);
         List<String> roleNames = savedAdmin.getRoles().stream()
@@ -227,7 +226,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         });
 
         //enabled after password can be false until the user successfully verifys their email
-
         return new CustomUserDetails(employeeToBeLoggedIn.get().getEmail(), employeeToBeLoggedIn.get().getEncryptedPassword(),
                 true, true, true,true,
                 authorities,employeeToBeLoggedIn.get().getEmployeeId(),
@@ -239,17 +237,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new NotFoundException("Employee not found with ID: " + employeeId));
         employee.setLastLoggedIn(new Date());
         employeeRepository.save(employee);
-    }
-    private String generateUsername(String firstName, String lastName) {
-        String firstNamePart = firstName.length() < 3 ?
-                firstName :
-                firstName.substring(0, 3);
-        String lastNamePart = lastName.length() < 2 ?
-                lastName :
-                lastName.substring(lastName.length() - 2);
-        int randomNumber = new Random().nextInt(900) + 100;
-
-        return (firstNamePart + lastNamePart).toLowerCase() + randomNumber;
     }
     public boolean verifyUser(String token) {
         Optional<Employee> employeeWithVerificationToken = employeeRepository.findByVerificationToken(token);
