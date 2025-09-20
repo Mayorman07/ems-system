@@ -12,9 +12,6 @@ public class RabbitMQConfig {
     TopicExchange userEventsExchange() {
         return new TopicExchange("user-events-exchange");
     }
-
-    // --- ADD THIS NEW BEAN ---
-    // This tells Spring to use JSON for sending messages.
     @Bean
     public Jackson2JsonMessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();

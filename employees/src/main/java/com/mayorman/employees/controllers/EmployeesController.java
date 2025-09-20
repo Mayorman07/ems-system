@@ -83,7 +83,7 @@ public class EmployeesController {
         EmployeeStatusDto employeeStatusDto = modelMapper.map(employeeStatusCheckRequest,EmployeeStatusDto.class);
         EmployeeStatusDto requestedEmployeeStatusDto = employeeService.checkStatus(employeeStatusDto);
         EmployeeStatusCheckResponse returnValue = modelMapper.map(requestedEmployeeStatusDto, EmployeeStatusCheckResponse.class);
-        return ResponseEntity.status(HttpStatus.FOUND).body(returnValue);
+        return ResponseEntity.status(HttpStatus.OK).body(returnValue);
     }
     @PutMapping("/{employeeId}/roles/manager")
     @PreAuthorize("hasRole('ADMIN')")
