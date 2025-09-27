@@ -57,7 +57,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
     private final Environment environment;
-    public UsernameGeneration usernameGeneration;
+    public final UsernameGeneration usernameGeneration;
     private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class);
 
     @Override
@@ -70,8 +70,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employeeDetails.setEmployeeId(UUID.randomUUID().toString());
         employeeDetails.setEncryptedPassword(passwordEncoder.encode(employeeDetails.getPassword()));
-//        String username = generateUsername(employeeDetails.getFirstName(), employeeDetails.getLastName());
-//        employeeDetails.setUsername(username);
         employeeDetails.setUsername(usernameGeneration.generateUsername(employeeDetails.getFirstName(),employeeDetails.getLastName()));
         employeeDetails.setStatus(Status.INACTIVE);
         Employee employeeToBeCreated = modelMapper.map(employeeDetails, Employee.class);
@@ -171,7 +169,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public EmployeeStatusDto checkStatus(EmployeeStatusDto employeeStatusDto) {
         Employee foundEmployee = employeeRepository.findEmployeeByUsername(employeeStatusDto.getUsername())
-                .orElseThrow(() -> new UsernameNotFoundException(employeeStatusDto.getUsername()));
+                .orElseThrow(() -> new UsernameNotFoundException( "No Employee with this username: " + employeeStatusDto.getUsername()));
 
         logger.info("Received request to fetch status of employee with username: {}", foundEmployee.getUsername());
         return modelMapper.map(foundEmployee, EmployeeStatusDto.class);

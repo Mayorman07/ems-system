@@ -1,7 +1,9 @@
 package com.mayorman.employees.utils;
 
-import java.util.Random;
+import org.springframework.stereotype.Component;
 
+import java.util.Random;
+@Component
 public class UsernameGeneration {
 
     public String generateUsername(String firstName, String lastName) {
