@@ -1,0 +1,11 @@
+# Use a Java 17 base image
+FROM eclipse-temurin:17-jdk-alpine
+
+# Corrected path to the keystore file
+COPY src/main/resources/config-server-keystore.jks /config-server-keystore.jks
+
+# Copy the JAR file and rename
+COPY target/ConfigServer-0.0.1-SNAPSHOT.jar ConfigServer.jar
+
+# Entrypoint is correct
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "ConfigServer.jar"]

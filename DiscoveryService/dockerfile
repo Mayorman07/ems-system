@@ -1,0 +1,8 @@
+# Use a Java 17 base image
+FROM eclipse-temurin:17-jdk-alpine
+
+# Copy the JAR file and rename
+COPY target/DiscoveryService-0.0.1-SNAPSHOT.jar DiscoveryService.jar
+
+# Corrected entrypoint with typo fix
+ENTRYPOINT ["java", "-jar", "DiscoveryService.jar"]
