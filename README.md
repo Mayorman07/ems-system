@@ -46,11 +46,11 @@ and asynchronous communication patterns.
 ## Technology Stack 🛠️
 * Backend: Java 17+, Spring Boot 3.x, Spring Cloud 2023.x (Netflix Eureka, Config, Gateway, Bus), Spring Data JPA (Hibernate), Spring Security, Spring AMQP.
 * Database: MySQL 8.0.
-* Messaging: RabbitMQ
-* Build: Apache Maven 3.8+
-* Containerization: Docker
-* Libraries: Lombok, ModelMapper, Flyway, JJWT (inferred from JwtAuthorities)
-* External Services: SendGrid
+* Messaging: RabbitMQ.
+* Build: Apache Maven 3.8+.
+* Containerization: Docker.
+* Libraries: Lombok, ModelMapper, Flyway, JJWT (inferred from JwtAuthorities).
+* External Services: SendGrid.
 
 ## Project Structure (High-Level)
 ```
