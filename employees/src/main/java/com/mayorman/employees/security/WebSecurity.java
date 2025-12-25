@@ -54,7 +54,6 @@ public class WebSecurity {
         AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
         AuthenticationFilter authenticationFilter = new AuthenticationFilter(employeeService, environment,authenticationManager,objectMapper);
         authenticationFilter.setAuthenticationFailureHandler(failureHandler);
-
         authenticationFilter.setFilterProcessesUrl(environment.getProperty("login.url.path"));
 
         http

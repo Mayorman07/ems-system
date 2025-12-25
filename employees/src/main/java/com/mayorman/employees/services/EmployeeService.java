@@ -10,7 +10,6 @@ public interface EmployeeService extends UserDetailsService {
     EmployeeDto createEmployee(EmployeeDto employeeDetails);
     EmployeeDto updateEmployee(EmployeeDto employeeDetails);
     void deleteEmployee(String email);
-
     EmployeeStatusDto  viewProfile(String email);
     void updateLastLoggedIn(String employeeId);
    List<EmployeeDto> viewEmployeeDetails();
