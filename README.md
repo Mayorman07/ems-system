@@ -6,7 +6,7 @@ It showcases proficiency in building distributed systems with Spring Boot, Sprin
 and deployment concepts relevant to cloud environments like AWS. The system handles core employee management tasks, authentication/authorization, 
 and asynchronous communication patterns.
 
-## Features Implemented ✨
+## Features Implemented 
 - Employee Management (EmployeesService)
   * CRUD operations for employee data.
   * User registration with email verification.
@@ -43,7 +43,7 @@ and asynchronous communication patterns.
 * MySQL for persistent data storage.
 * Flyway for database schema version control.
 
-## Technology Stack 🛠️
+## Technology Stack 
 * Backend: Java 17+, Spring Boot 3.x, Spring Cloud 2023.x (Netflix Eureka, Config, Gateway, Bus), Spring Data JPA (Hibernate), Spring Security, Spring AMQP.
 * Database: MySQL 8.0.
 * Messaging: RabbitMQ.
@@ -82,7 +82,7 @@ ems-system/
 └── README.md               # This file
 ```
 
-## Local Development Setup ⚙️
+## Local Development Setup 
 - Prerequisites
 * Java JDK 17+
 * Apache Maven 3.8+
@@ -139,13 +139,13 @@ ems-system/
 * Navigate to each service directory (ApiGateway, EmployeesService, EmailService) and run:
   - mvn spring-boot: run.
 
-## Building Docker Images 🐳
+## Building Docker Images 
 * In each service directory (ApiGateway, EmployeesService, EmailService)
 * mvn clean package -DskipTests
 * docker build -t <your-dockerhub-username>/<service-name>:latest .
 * docker push <your-dockerhub-username>/<service-name>:latest
 
-## Deployment Overview ☁️
+## Deployment Overview 
 * Deploy containers to hosts (e.g., AWS EC2 instances).
 * Inject configuration (IPs, credentials, API keys) securely via environment variables using -e flags in Docker run commands (see examples below).
 * Configure network security (e.g., AWS Security Groups) for inter-service communication (Private IPs) and external access (API Gateway).
@@ -218,7 +218,7 @@ Example Docker run (Placeholders Only)
 
 - (Access column indicates whether authentication (JWT) is typically required)
 
-## Access Points (Example Deployed) 🌍
+## Access Points (Example Deployed) 
 * API Gateway: http://<ApiGateway-Public-IP>:9082
 * Eureka Dashboard: http://<Eureka-Public-IP>:9010
 * RabbitMQ Management: http://<RabbitMQ-Public-IP>:15672
